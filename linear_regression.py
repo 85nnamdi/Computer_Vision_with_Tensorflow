@@ -37,8 +37,8 @@ with tf.Session() as sess:
         ls, ws, bs = sess.run([l_summary, w_summary, b_summary], {x:x_data, y:y_data})
 
         summary_writer.add_summary(ls, global_step=k)  # writes loss summary
-        summary_writer.add_summary(ws, global_step=k)  # writes loss summary
-        summary_writer.add_summary(bs, global_step=k)  # writes loss summary
+        summary_writer.add_summary(ws, global_step=k)  # writes summary for variable w
+        summary_writer.add_summary(bs, global_step=k)  # writes summary for variable b
 
 #Start plotting the line
 xs = np. linspace ( -1.0 , 1.0 , num =20)
