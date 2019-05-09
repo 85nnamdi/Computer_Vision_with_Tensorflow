@@ -1,6 +1,8 @@
 import numpy as np
 import os
 import tensorflow as tf
+from tempfile import TemporaryFile
+outfile = TemporaryFile()
 
 """
 unpickle function from CIFAR-10 website
@@ -30,7 +32,7 @@ def create_dataset_from_files(files):
 
 	return data, labels
 
-cifar_data_path = ".\\cifar-10-python.tar\\cifar-10-python\\cifar-10-batches-py\\" # replace with your path
+cifar_data_path = "./cifar-10-python.tar/cifar-10-python/cifar-10-batches-py/" # replace with your path
 cifar_training_files = [os.path.join(cifar_data_path, 'data_batch_{:d}'.format(i)) for i in range(1,6)]
 cifar_testing_files = [os.path.join(cifar_data_path, 'test_batch')]
 
@@ -83,26 +85,29 @@ batchsize = 32
 # start the training
 with tf.Session() as sess:
     #write to log file
-    summary_writer = tf.summary.FileWriter(logdir='./logs', graph=sess.graph)
+    #sub_dir = os.mkdir('event_log'+str(1))
+    summary_writer = tf.summary.FileWriter(logdir='./logs/', graph=sess.graph)
     sess.run(tf.global_variables_initializer())
 
-    #draw sample indeces
-    idx = np.random.choice(train_data.shape[0], batchsize, replace=False)
-    for batch in range(batchsize):
-        _,l = sess.run([minimize_op,loss_function],feed_dict={image:train_data, labels:train_labels})
-        #print('Iteration {:d}: Loss{:f}, w ={:f}, b= {:f}'.format(k,l,wk,bk))
-        ls, a_s = sess.run([l_summary, a_summary], {image:x_data, labels:y_data})
+    for batch in range(100000):
+        # draw sample indeces
+        idx = np.random.choice(train_data.shape[0], batchsize, replace=False)
 
-        summary_writer.add_summary(ls, global_step=k)  # writes loss summary
-        summary_writer.add_summary(a_s, global_step=k)  # writes accuracy summary
+        _,ls,a_s,l = sess.run([l_summary, a_summary, minimize_op,loss_function],feed_dict={image:train_data[idx], labels:train_labels[idx]})
+        #print('Iteration {:d}: Loss{:f}, w ={:f}, b= {:f}'.format(k,l,wk,bk))
+        #ls, a_s = sess.run([l_summary, a_summary], {image:x_data, labels:y_data})
+
+        summary_writer.add_summary(_, global_step=batch)  # writes loss summary
+        summary_writer.add_summary(ls, global_step=batch)  # writes accuracy summary
 
         if batch % 100 == 0:
             print('Batch {:d} done'.format(batch))
 
 
-    test_loss , test_accuracy = sess.run([ loss , accuracy ], feed_dict ={images : test_data , labels : test_labels })
+    test_loss , test_accuracy, pred = sess.run([ loss_function , accuracy, predictions ], feed_dict ={image: test_data, labels: test_labels})
     print ('Test loss : {:f} -- test accuracy : {:f}'. format ( test_loss, test_accuracy ) )
+    np.save(outfile, pred)
 
 # Automate the logviewer from within python
-subprocess.Popen(["tensorboard", "--logdir=./logs"])
-webbrowser.open('http://localhost:6006', new=1)
+#subprocess.Popen(["tensorboard", "--logdir=./logs"])
+#webbrowser.open('http://localhost:6006', new=1)
