@@ -8,8 +8,8 @@ import math
 
 #read the files
 #path = '.\positives\ '
-p_path = 'C:\\University of Hamburg\\SoSe2019\\ML\\Exercise\\positives\\'
-n_path = 'C:\\University of Hamburg\\SoSe2019\\ML\\Exercise\\negatives\\'
+p_path = 'path\\positives\\'
+n_path = 'path\\negatives\\'
 
 def read_files(dir, extension):
     files = [f for f in glob.glob(dir + "**/*." + extension, recursive=True)]
